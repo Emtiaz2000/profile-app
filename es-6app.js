@@ -1,5 +1,6 @@
 class Profile {
-    constructor(name, email, profession) {
+    constructor(id, name, email, profession) {
+        this.id = id;
         this.name = name;
         this.email = email;
         this.profession = profession;
@@ -10,6 +11,7 @@ class UI {
 
     //add new tr
     addProfile({
+        id,
         name,
         email,
         profession
@@ -18,6 +20,7 @@ class UI {
         tr.innerHTML = `<td class="text text-center">${name}</td>
         <td class="text text-center">${email}</td>
         <td class="text text-center">${profession}</td>
+        <input type="hidden" data-id="${id}">
         <td><i class="fas fa-trash" id="trash"></i></td>`
         document.querySelector('#addProfile').appendChild(tr)
         document.querySelector('#Name').value = '';
@@ -37,20 +40,59 @@ class UI {
             div.remove()
         }, 3000)
     }
+
+    getId() {
+        return document.querySelectorAll('tr').length;
+    } 
+
 }
 
-class Store{
-    static addToLocalstorage(profile){
+class Store {
+    static addToLocalstorage(profile) {
         let profiles;
-        if(localStorage.getItem('profiles')=== null){
+        if (localStorage.getItem('profiles') === null) {
             profiles = [];
-        }else{
-            profiles = JSON.parse(localStorage.getItem(profiles));
+        } else {
+            profiles = JSON.parse(localStorage.getItem('profiles'));
         }
         profiles.push(profile)
-        localStorage.setItem('profiles',JSON.stringify(profiles) )
+        localStorage.setItem('profiles', JSON.stringify(profiles))
+    }
+
+
+//get profile in localstorage
+    static getProfile() {
+        let profiles;
+        if (localStorage.getItem('profiles') === null) {
+            profiles = []
+        } else {
+            profiles = JSON.parse(localStorage.getItem('profiles'));
+        }
+        return profiles;
+    }
+
+    static displayingToUi() {
+        const profiles = Store.getProfile();
+        profiles.forEach(element => {
+            const ui = new UI();
+            ui.addProfile(element);
+
+        });
+    }
+    //delete from local storage
+    static DeleteProfile(id){
+        const profiles = Store.getProfile();
+        profiles.forEach((element,index) => {
+            if(element.id === id){
+                profiles.splice(index,1)
+            }
+            localStorage.setItem('profiles',JSON.stringify(profiles))
+        })
     }
 }
+
+
+window.addEventListener('DOMContentLoaded', Store.displayingToUi)
 
 //check and add profile after submit
 document.querySelector('#button').addEventListener('click', (e) => {
@@ -62,7 +104,8 @@ document.querySelector('#button').addEventListener('click', (e) => {
     if (name === '' || email === '' || profession === "") {
         ui.alerting('please fill the input', 'danger')
     } else {
-        const profile = new Profile(name, email, profession);
+        const id = ui.getId();
+        const profile = new Profile(id, name, email, profession);
         ui.addProfile(profile);
         Store.addToLocalstorage(profile);
         ui.alerting('profile added successfully', 'success')
@@ -75,6 +118,9 @@ document.querySelector('#button').addEventListener('click', (e) => {
 document.querySelector("#addProfile").addEventListener('click', (e) => {
     //console.log(e.target)
     const ui = new UI()
+    const id = e.target.parentElement.previousElementSibling.dataset.id;
+    console.log(id)
+    Store.DeleteProfile(id);
     if (e.target.id === "trash") {
         e.target.parentElement.parentElement.remove();
         ui.alerting('profile deleted successfully', 'success')

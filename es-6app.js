@@ -118,7 +118,7 @@ document.querySelector('#button').addEventListener('click', (e) => {
 document.querySelector("#addProfile").addEventListener('click', (e) => {
     //console.log(e.target)
     const ui = new UI()
-    const id = e.target.parentElement.previousElementSibling.dataset.id;
+    const id =Number(e.target.parentElement.previousElementSibling.dataset.id);
     console.log(id)
     Store.DeleteProfile(id);
     if (e.target.id === "trash") {
